@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "pulp -w build --to app/game.js --jobs 4 --no-psa --skip-entry-point"
+    "build": "pulp -w build --to app/game.js --jobs 4 --no-psa --skip-entry-point",
+    "server": "python -m SimpleHTTPServer 8080"
   },
   "keywords": [
     "purescript",
