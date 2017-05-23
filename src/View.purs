@@ -2,6 +2,7 @@ module View (view, setupView) where
 
 import Prelude
 import Control.Monad.Eff
+import Control.Monad.Eff.Ref
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Graphics.Canvas as C
@@ -17,13 +18,19 @@ clearScreen ctx color = do
     pure unit
     
 
-view' :: forall e. C.Context2D -> GameState -> Game -> Eff ( canvas :: C.CANVAS |  e ) Unit
+view' :: forall e. C.Context2D -> GameState -> Game -> Eff ( ref :: REF, canvas :: C.CANVAS |  e ) Unit
 view' ctx Playing game = do
-    clearScreen ctx "black"
+    clearScreen ctx "#1f1f1f"
+    
+    touches <- readRef game.touch
+    foreachE touches $ \t -> do
+        _ <- C.setFillStyle "white" ctx
+        _ <- C.fillRect ctx { x : t.x, y : t.y, w : 10.0, h : 10.0 }
+        pure unit
     
 view' _ _ _ = pure unit
 
-view :: forall e. C.Context2D -> Game -> Eff ( canvas :: C.CANVAS | e ) Unit
+view :: forall e. C.Context2D -> Game -> Eff ( ref :: REF, canvas :: C.CANVAS | e ) Unit
 view ctx game = view' ctx game.state game
 
 setupView ::

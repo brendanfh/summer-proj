@@ -2,9 +2,11 @@
 <html>
     <head>
         <title>Summer Project</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
         <script type="text/javascript" src="game.js"></script>
         <script type="text/javascript">
             window.onload = function() {
+                window.scrollTo(0, 1);
                 PS["Main"].main();  
             };
         </script>
@@ -13,13 +15,40 @@
                 margin: 0;
                 padding: 0;
             }
-            /*canvas {*/
-            /*    width: 450px;*/
-            /*    height: 800px;*/
-            /*}*/
+            body, canvas {
+                overflow: hidden;
+            }
+            canvas {
+                float: left;
+                image-rendering: pixelated;
+                cursor: crosshair;
+            }
+            #consoleContainer {
+                float: right;
+                width: 33%;
+                height: 100vh;
+            } 
+            #console {
+                float: right;
+                width: 99%;
+                height: 100%;
+                font: 16pt Consolas;
+            }
+            @media only screen and (max-device-width : 480px) {
+                canvas {
+                    width : 100%;
+                    height : 100%;
+                }
+                #console {
+                    display: none;
+                }
+            }
         </style>
     </head>
     <body>
         <canvas id="gameCanvas"></canvas>
+        <div id="consoleContainer">
+            <textarea readonly id="console"></textarea>
+        </div>
     </body>
 </html>

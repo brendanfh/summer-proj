@@ -1,7 +1,7 @@
 module Main where
 
 import Prelude
-import Control.Monad.Eff (Eff)
+import Control.Monad.Eff (Eff, forE)
 import Control.Monad.Eff.Ref
 import Data.Tuple (Tuple(..))
 import Graphics.Canvas as C
@@ -10,6 +10,7 @@ import Globals as G
 import Types
 import Update (update)
 import Util.Keyboard as K
+import Util.Log
 import Util.RequestAnimFrame (requestAnimationFrame)
 import Util.Touch as T
 import View (view, setupView)
@@ -30,8 +31,10 @@ initial = do
     pure gameRef
     
 
-main :: forall e. Eff ( game :: GAME, ref :: REF, canvas :: C.CANVAS | e ) Unit
+main :: forall e. Eff ( log :: LOG, game :: GAME, ref :: REF, canvas :: C.CANVAS | e ) Unit
 main = do
+    logStrLn "Loading..."
+    
     Tuple canvas ctx <- setupView "gameCanvas" G.width G.height
     
     gameRef <- initial
@@ -44,4 +47,5 @@ main = do
             
             requestAnimationFrame loop
     
+    logStrLn "Starting the loop"
     requestAnimationFrame loop
