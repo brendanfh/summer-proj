@@ -1,10 +1,18 @@
 module Types where
 
 import Prelude
-import Control.Monad.Eff (kind Effect)
-import Control.Monad.Eff.Ref (Ref)
+import Control.Monad.Eff (kind Effect, Eff)
+import Control.Monad.Eff.Ref (Ref, REF)
+import Graphics.Canvas (CANVAS)
+
+import Util.Log (LOG)
 
 foreign import data GAME :: Effect
+
+type EffGame e a = Eff ( game :: GAME
+                       , log :: LOG
+                       , canvas :: CANVAS
+                       , ref :: REF | e ) a
 
 data GameState 
     = Playing
@@ -15,17 +23,20 @@ data GameState
 
 type Game =
     { state :: GameState
-    , blocks :: Array Block
-    , balls :: Array Ball
-    , powerups :: Array PowerUp
+    , objects :: Array GameObj
     
     , keyboard :: Ref Keyboard
     , touch :: Ref TouchState
     }
 
-type Block = {}
-type Ball = {}
-data PowerUp = NoPower
+type GameObject a = { x :: Number, y :: Number | a }
+
+data GameObj
+    = Block (GameObject ( health :: Int ))
+    | Ball (GameObject ( vx :: Number, vy :: Number ))
+    | PowerUp PowerUps
+    
+data PowerUps = NoPower
 
 
 

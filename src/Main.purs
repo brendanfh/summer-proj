@@ -1,29 +1,27 @@
 module Main where
 
 import Prelude
-import Control.Monad.Eff (Eff, forE)
-import Control.Monad.Eff.Ref
+import Control.Monad.Eff.Ref (Ref, newRef, readRef)
 import Data.Tuple (Tuple(..))
-import Graphics.Canvas as C
 
 import Globals as G
 import Types
 import Update (update)
 import Util.Keyboard as K
-import Util.Log
+import Util.Log (logStrLn, logLn)
 import Util.RequestAnimFrame (requestAnimationFrame)
 import Util.Touch as T
 import View (view, setupView)
+import Util.Rect (rect, intersectsWithAngle)
 
-initial :: forall e. Eff ( game :: GAME, ref :: REF | e ) (Ref Game)
+initial :: forall e. EffGame e (Ref Game)
 initial = do
     keyboard <- K.initialize
     touch <- T.initialize G.width G.height
     let initialState =
             { state : Playing
-            , blocks : []
-            , balls : []
-            , powerups : []
+            , objects : [ Ball { x : 0.0, y : 0.0, vx : 10.0, vy : 10.0 }
+                        , Block { x : 100.0, y : 75.0, health : 10 }]
             , keyboard : keyboard
             , touch : touch
             }
@@ -31,9 +29,11 @@ initial = do
     pure gameRef
     
 
-main :: forall e. Eff ( log :: LOG, game :: GAME, ref :: REF, canvas :: C.CANVAS | e ) Unit
+main :: forall e. EffGame e Unit
 main = do
     logStrLn "Loading..."
+    logLn $ (intersectsWithAngle (rect 5.0 0.0 10.0 10.0) (rect 3.0 3.0 3.0 3.0))
+    logLn $ (intersectsWithAngle (rect 3.0 3.0 3.0 3.0) (rect 5.0 0.0 10.0 10.0))
     
     Tuple canvas ctx <- setupView "gameCanvas" G.width G.height
     

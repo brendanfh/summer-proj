@@ -6,19 +6,20 @@ import Control.Monad.Eff.Ref
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Graphics.Canvas as C
+import Math (floor, pi)
 import Partial.Unsafe (unsafePartial)
 
 import Globals as G
 import Types
 
-clearScreen :: forall e. C.Context2D -> String -> Eff ( canvas :: C.CANVAS | e ) Unit
+clearScreen :: forall e. C.Context2D -> String -> EffGame e Unit
 clearScreen ctx color = do
     _ <- C.setFillStyle color ctx
     _ <- C.fillRect ctx { x : 0.0, y : 0.0, w : G.width, h : G.height }
     pure unit
     
 
-view' :: forall e. C.Context2D -> GameState -> Game -> Eff ( ref :: REF, canvas :: C.CANVAS |  e ) Unit
+view' :: forall e. C.Context2D -> GameState -> Game -> EffGame e Unit
 view' ctx Playing game = do
     clearScreen ctx "#1f1f1f"
     
@@ -27,10 +28,28 @@ view' ctx Playing game = do
         _ <- C.setFillStyle "white" ctx
         _ <- C.fillRect ctx { x : t.x, y : t.y, w : 10.0, h : 10.0 }
         pure unit
+        
+    foreachE game.objects (viewObj ctx)
     
 view' _ _ _ = pure unit
 
-view :: forall e. C.Context2D -> Game -> Eff ( ref :: REF, canvas :: C.CANVAS | e ) Unit
+viewObj :: forall e. C.Context2D -> GameObj -> EffGame e Unit
+viewObj ctx (Ball ball) = do
+    _ <- C.setFillStyle "red" ctx
+    _ <- C.beginPath ctx
+    _ <- C.arc ctx { x : floor ball.x, y : floor ball.y, r : 15.0, start : 0.0, end : 2.0 * pi }
+    _ <- C.closePath ctx
+    _ <- C.fill ctx
+    pure unit
+    
+viewObj ctx (Block block) = do
+    _ <- C.setFillStyle "green" ctx
+    _ <- C.fillRect ctx { x : block.x, y : block.y, w : G.blockSize, h : G.blockSize }
+    pure unit
+    
+viewObj ctx _ = pure unit
+
+view :: forall e. C.Context2D -> Game -> EffGame e Unit
 view ctx game = view' ctx game.state game
 
 setupView ::
