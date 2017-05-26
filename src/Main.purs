@@ -20,8 +20,11 @@ initial = do
     touch <- T.initialize G.width G.height
     let initialState =
             { state : Playing
-            , objects : [ Ball { x : 0.0, y : 0.0, vx : 10.0, vy : 10.0 }
-                        , Block { x : 100.0, y : 75.0, health : 10 }]
+            , objects : [ Ball { x : 0.0, y : 0.0, vx : 100.0, vy : 100.0, id : 0 }
+                        , Ball { x : 200.0, y : 0.0, vx : -100.0, vy : 110.0, id : 1 }
+                        , Ball { x : 108.0, y : 300.0, vx : 0.0, vy : -180.0, id : 2 }
+                        , Block { x : 100.0, y : 75.0, health : 2, id : 3 }
+                        , Block { x : 50.0, y : 125.0, health : 1, id : 4 } ]
             , keyboard : keyboard
             , touch : touch
             }
@@ -32,8 +35,7 @@ initial = do
 main :: forall e. EffGame e Unit
 main = do
     logStrLn "Loading..."
-    logLn $ (intersectsWithAngle (rect 5.0 0.0 10.0 10.0) (rect 3.0 3.0 3.0 3.0))
-    logLn $ (intersectsWithAngle (rect 3.0 3.0 3.0 3.0) (rect 5.0 0.0 10.0 10.0))
+    logLn $ (intersectsWithAngle (rect 0.0 0.0 10.0 10.0) (rect 3.0 3.0 3.0 3.0))
     
     Tuple canvas ctx <- setupView "gameCanvas" G.width G.height
     

@@ -37,14 +37,18 @@ viewObj :: forall e. C.Context2D -> GameObj -> EffGame e Unit
 viewObj ctx (Ball ball) = do
     _ <- C.setFillStyle "red" ctx
     _ <- C.beginPath ctx
-    _ <- C.arc ctx { x : floor ball.x, y : floor ball.y, r : 15.0, start : 0.0, end : 2.0 * pi }
+    _ <- C.arc ctx { x : floor (ball.x + hbSize), y : floor (ball.y + hbSize), r :hbSize , start : 0.0, end : 2.0 * pi }
     _ <- C.closePath ctx
     _ <- C.fill ctx
     pure unit
+    where
+        hbSize = G.ballSize / 2.0
     
 viewObj ctx (Block block) = do
     _ <- C.setFillStyle "green" ctx
     _ <- C.fillRect ctx { x : block.x, y : block.y, w : G.blockSize, h : G.blockSize }
+    _ <- C.setFillStyle "black" ctx
+    _ <- C.fillText ctx (show block.health) (block.x + 8.0) (block.y + 20.0)
     pure unit
     
 viewObj ctx _ = pure unit
@@ -64,6 +68,8 @@ setupView canvasName width height = unsafePartial $ do
     
     _ <- C.setCanvasWidth width canvas
     _ <- C.setCanvasHeight height canvas
+    
+    _ <- C.setFont "12pt Consolas" ctx
     
     pure $ Tuple canvas ctx
     

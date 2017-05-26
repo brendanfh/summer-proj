@@ -3,32 +3,21 @@ module Update (update) where
 import Prelude
 import Control.Monad.Eff
 import Control.Monad.Eff.Ref
-import Data.Traversable (for)
-import Optic.Core
 
-import Lenses
+import Handlers.Collision as M
+import Handlers.Destruction as M
+import Handlers.Movement as M
 import Types
-import Util.Log
-import Util.Rect (rect, intersects)
 
 update' :: forall e. Number -> GameState -> Ref Game -> EffGame e Unit
 update' time Playing gameRef = do
-    state <- readRef gameRef
-    let objs = state.objects
-    objs' <- for objs (updateObj time state)
-    
-    modifyRef gameRef (objects .~ objs')
-    
-update' _ _ _ = pure unit
+    foreachE [ M.moveObjects time
+             , M.checkCollisions time
+             , M.removeDeadObjects
+             ] $ \action -> do
+                action gameRef
 
-updateObj :: forall e. Number -> Game -> GameObj -> EffGame e GameObj
-updateObj time game (Block block) = pure (Block block)
-updateObj time game (Ball ball) = do
-    let nx = ball.x + ball.vx * time
-        ny = ball.y + ball.vy * time
-    pure $ Ball $ ball { x = nx, y = ny }
-    
-updateObj time game p@(PowerUp powerup) = pure p
+update' _ _ _ = pure unit
 
 update :: forall e. Number -> Ref Game -> EffGame e Unit
 update time gameRef = do

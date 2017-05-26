@@ -3,6 +3,7 @@ module Types where
 import Prelude
 import Control.Monad.Eff (kind Effect, Eff)
 import Control.Monad.Eff.Ref (Ref, REF)
+import Data.Tuple (Tuple(..))
 import Graphics.Canvas (CANVAS)
 
 import Util.Log (LOG)
@@ -29,7 +30,7 @@ type Game =
     , touch :: Ref TouchState
     }
 
-type GameObject a = { x :: Number, y :: Number | a }
+type GameObject a = { x :: Number, y :: Number, id :: Int | a }
 
 data GameObj
     = Block (GameObject ( health :: Int ))
@@ -46,3 +47,10 @@ type Keyboard = Array Key
 
 type Touch = { x :: Number, y :: Number, identifier :: Int }
 type TouchState = Array Touch
+
+
+--UTIL TYPES
+data Triple a b c = Triple a b c
+
+tupleToTriple :: forall a b c. Tuple a b -> c -> Triple a b c
+tupleToTriple (Tuple a b) c = Triple a b c
