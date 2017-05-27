@@ -13,7 +13,8 @@
     "purescript-free-canvas": "^3.0.0",
     "purescript-refs": "^3.0.0",
     "purescript-lens": "^3.0.0",
-    "purescript-math": "^2.0.0"
+    "purescript-math": "^2.0.0",
+    "purescript-integers": "^3.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"

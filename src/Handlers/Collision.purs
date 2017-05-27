@@ -21,23 +21,23 @@ checkCollisions :: forall e. Number -> Ref Game -> EffGame e Unit
 checkCollisions time gameRef = do
     game <- readRef gameRef
     
-    collisions <- detectCollisions game.objects
+    let collisions = detectCollisions game.objects
     handleCollisions time gameRef collisions
     
-detectCollisions :: forall e. Array GameObj -> EffGame e (Array Collision)
-detectCollisions objects = pure $ concatMap (coll objects) objects
+detectCollisions :: forall e. Array GameObj -> Array Collision
+detectCollisions objects = concatMap (coll objects) objects
     where
         coll :: Array GameObj -> GameObj -> Array Collision
         coll objs (Ball ball) =
             let ballRect = rect ball.x ball.y G.ballSize G.ballSize
-                (Triple collided coords block) =
+                (Triple collided coords collObj) =
                     foldl
                         (collides ballRect)
-                        (Triple false (Coords { x : 0.0, y : 0.0 }) (Ball ball))
+                        (Triple false (Coords 0.0 0.0) (Ball ball))
                         objs
                         
             in if collided then
-                [ Triple (Ball ball) block coords ]
+                [ Triple (Ball ball) collObj coords ]
             else
                 [ ]
             
@@ -48,6 +48,11 @@ detectCollisions objects = pure $ concatMap (coll objects) objects
             where
                 potCol :: Tuple Boolean Coords
                 potCol = intersectsWithAngle ballRect (rect block.x block.y G.blockSize G.blockSize)
+        
+        collides ballRect acc@(Triple hit _ _) w@(Wall wall) = if hit then acc else tupleToTriple potCol w
+            where
+                potCol :: Tuple Boolean Coords
+                potCol = intersectsWithAngle ballRect (rect wall.x wall.y wall.w wall.h)
                 
         collides _ acc _ = acc
         
@@ -55,23 +60,35 @@ handleCollisions :: forall e. Number -> Ref Game -> Array Collision -> EffGame e
 handleCollisions time gameRef collisions = do
     foreachE collisions $ \c -> do 
         handleCollision c
-        logStrLn "COLLISION"
     
     where
         handleCollision :: forall e. Collision -> EffGame e Unit
-        handleCollision (Triple (Ball ball) (Block block) (Coords angle)) = do
-            let newBall | angle.x < angle.y = ball { y = ball.y - ball.vy * time, vy = -ball.vy }
-                        | otherwise = ball { x = ball.x - ball.vx * time, vx = -ball.vx }
+        handleCollision (Triple (Ball ball) (Block block) (Coords angle_x angle_y)) = do
+            let newBall | angle_x < angle_y = ball { y = ball.y - ball.vy * time
+                                                   , x = ball.x - ball.vx * time
+                                                   , vy = -ball.vy }
+                        | otherwise = ball { x = ball.x - ball.vx * time
+                                           , y = ball.y - ball.vy * time
+                                           , vx = -ball.vx }
                 
                 newBlock = block { health = block.health - 1 }
             
             setObjectById newBall.id (Ball newBall)
             setObjectById newBlock.id (Block newBlock)
             
-            
+        handleCollision (Triple (Ball ball) (Wall wall) (Coords angle_x angle_y)) = do
+            let newBall | angle_x / wall.w < angle_y / wall.h = ball { y = ball.y - ball.vy * time
+                                                                     , x = ball.x - ball.vx * time
+                                                                     , vy = -ball.vy }
+                        | otherwise = ball { x = ball.x - ball.vx * time
+                                           , y = ball.y - ball.vy * time
+                                           , vx = -ball.vx }
+                
+            setObjectById newBall.id (Ball newBall)
+        
         handleCollision _ = pure unit
         
-        setObjectById :: forall e. Int -> GameObj -> EffGame e Unit
+        setObjectById :: forall e. String -> GameObj -> EffGame e Unit
         setObjectById id obj = do
             game <- readRef gameRef
             let func :: GameObj -> GameObj

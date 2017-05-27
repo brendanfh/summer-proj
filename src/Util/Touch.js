@@ -23,7 +23,8 @@ exports.setupTouch = function (touchRef) {
                     for (var i=0; i < touches.length; i++) {
                         touchRef.value.push({ x : (touches[i].pageX / window.innerWidth) * GAME_WIDTH
                                             , y : (touches[i].pageY / window.innerHeight) * GAME_HEIGHT
-                                            , identifier : touches[i].identifier});
+                                            , identifier : touches[i].identifier
+                                            , justTouched : true });
                     }
                     
                     return false;
@@ -34,7 +35,8 @@ exports.setupTouch = function (touchRef) {
                         var idx = getTouchIndex(touchRef.value, touches[i].identifier);
                         touchRef.value.splice(idx, 1, { x : (touches[i].pageX / window.innerWidth) * GAME_WIDTH
                                                       , y : (touches[i].pageY / window.innerHeight) * GAME_HEIGHT
-                                                      , identifier : touches[i].identifier});
+                                                      , identifier : touches[i].identifier
+                                                      , justTouched : false });
                     }
                     
                     return false;
@@ -61,7 +63,8 @@ exports.setupTouch = function (touchRef) {
                     mouseDown = true;
                     touchRef.value.push({ x : evt.pageX
                                         , y : evt.pageY
-                                        , identifier : 100});
+                                        , identifier : 100
+                                        , justTouched : true });
                     return false;
                 });
                 document.addEventListener("mousemove", function(evt) {
@@ -69,7 +72,8 @@ exports.setupTouch = function (touchRef) {
                     var idx = getTouchIndex(touchRef.value, 100);
                     touchRef.value.splice(idx, 1, { x : evt.pageX
                                                   , y : evt.pageY
-                                                  , identifier : 100 });
+                                                  , identifier : 100
+                                                  , justTouched : false });
                     return false; 
                 });
                 document.addEventListener("mouseup", function(evt) {

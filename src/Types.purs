@@ -28,13 +28,16 @@ type Game =
     
     , keyboard :: Ref Keyboard
     , touch :: Ref TouchState
+    
+    , deltaTime :: Number
     }
 
-type GameObject a = { x :: Number, y :: Number, id :: Int | a }
+type GameObject a = { x :: Number, y :: Number, id :: String | a }
 
 data GameObj
     = Block (GameObject ( health :: Int ))
     | Ball (GameObject ( vx :: Number, vy :: Number ))
+    | Wall (GameObject ( w :: Number, h :: Number ))
     | PowerUp PowerUps
     
 data PowerUps = NoPower
@@ -45,7 +48,7 @@ data PowerUps = NoPower
 type Key = Int
 type Keyboard = Array Key
 
-type Touch = { x :: Number, y :: Number, identifier :: Int }
+type Touch = { x :: Number, y :: Number, justTouched :: Boolean, identifier :: Int }
 type TouchState = Array Touch
 
 
