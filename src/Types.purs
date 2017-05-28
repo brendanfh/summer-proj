@@ -45,7 +45,7 @@ data PowerUps = NoPower
 
 
 --INPUT TYPES
-type Key = Int
+type Key = Tuple Int Boolean
 type Keyboard = Array Key
 
 type Touch = { x :: Number, y :: Number, justTouched :: Boolean, identifier :: Int }

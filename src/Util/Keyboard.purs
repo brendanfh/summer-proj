@@ -5,31 +5,48 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Ref
 import Data.Array (filter)
 import Data.Foldable (foldl)
+import Data.Tuple (Tuple(..))
 
-import Types (GAME, Keyboard, Key)
+import Types (GAME, EffGame, Game, Keyboard, Key)
 
-foreign import onKeyDown :: forall e. (Key -> Eff ( game :: GAME | e ) Unit) -> Eff ( game :: GAME | e ) Unit
+foreign import onKeyDown :: forall e. (Int -> Eff ( game :: GAME | e ) Unit) -> Eff ( game :: GAME | e ) Unit
 
-foreign import onKeyUp :: forall e. (Key -> Eff ( game :: GAME | e ) Unit) -> Eff ( game :: GAME | e ) Unit
+foreign import onKeyUp :: forall e. (Int -> Eff ( game :: GAME | e ) Unit) -> Eff ( game :: GAME | e ) Unit
 
 initialState :: Keyboard
 initialState = []
 
-initialize :: forall e. Eff ( game :: GAME, ref :: REF | e ) (Ref Keyboard)
+initialize :: forall e. EffGame e (Ref Keyboard)
 initialize = do
     keyRef <- newRef initialState
     onKeyDown (\code ->
-        modifyRef keyRef ((<>) [ code ])
+        modifyRef keyRef ((<>) [ Tuple code true ])
     )
     onKeyUp (\code ->
-        modifyRef keyRef (filter ((/=) code))
+        modifyRef keyRef (filter (\(Tuple c _) -> c /= code))
     )
     pure keyRef
 
-isDown :: forall e. Ref Keyboard -> Key -> Eff ( ref :: REF, game :: GAME | e ) Boolean
-isDown keyRef key = do
-    keyState <- readRef keyRef
-    pure $ isDown' keyState key
+updateKeyboard :: forall e. Ref Game -> EffGame e Unit
+updateKeyboard gameRef = do
+    game <- readRef gameRef
+    keys <- readRef game.keyboard
     
-isDown' :: Keyboard -> Key -> Boolean
-isDown' keyboard key = foldl (\acc val -> acc || (val == key)) false keyboard
+    let newKeys = map (\(Tuple code _) -> Tuple code false) keys
+    writeRef game.keyboard newKeys
+
+isDown :: forall e. Ref Keyboard -> Int -> EffGame e Boolean
+isDown keyRef keyCode = do
+    keyState <- readRef keyRef
+    pure $ isDown' keyState keyCode
+    
+isDown' :: Keyboard -> Int -> Boolean
+isDown' keyboard keyCode = foldl (\acc (Tuple c _) -> acc || (c == keyCode)) false keyboard
+
+isJustDown :: forall e. Ref Keyboard -> Int -> EffGame e Boolean
+isJustDown keyRef keyCode = do
+    keyState <- readRef keyRef
+    pure $ isJustDown' keyState keyCode
+    
+isJustDown' :: forall e. Keyboard -> Int -> Boolean
+isJustDown' keyboard keyCode = foldl (\acc (Tuple c jd) -> acc || ((c == keyCode) && jd)) false keyboard 
